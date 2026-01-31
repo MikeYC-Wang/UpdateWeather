@@ -1,14 +1,14 @@
-﻿name: Update Weather
+name: Update Weather
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # UTC 時間每 4 小時執行
-  workflow_dispatch:      # 允許手動點擊觸發
+    - cron: '0 * * * *' 
+  workflow_dispatch: 
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    permissions:          # 重要：賦予 Action 寫入權限
+    permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
@@ -31,5 +31,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "☁️ Update weather info" || exit 0
+          git commit -m "☁️ Update weather info (Hourly)" || exit 0
           git push
