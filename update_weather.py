@@ -1,6 +1,10 @@
 import requests
 import os
 import re
+import urllib3
+
+# 關閉 SSL 警告 (因為我們要略過驗證)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # 設定基隆市
 LOCATION = "基隆市"
@@ -15,7 +19,8 @@ def get_weather_emoji(wx):
     return "✨"
 
 def get_weather():
-    res = requests.get(URL)
+    # 關鍵修改：加入 verify=False 來略過 SSL 驗證
+    res = requests.get(URL, verify=False)
     data = res.json()
     
     # 取得氣象資料
@@ -33,7 +38,15 @@ def get_weather():
     return f"{emoji} **{LOCATION}目前天氣**：{wx} | 🌡️ {min_t}-{max_t}°C | ☔ 降雨機率 {pop}%"
 
 def update_readme(weather_str):
-    with open("README.md", "r", encoding="utf-8") as f:
+    # 取得腳本所在的絕對路徑 (確保在任何地方執行都找得到檔案)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_dir, "README.md")
+
+    if not os.path.exists(file_path):
+        print(f"Error: README.md not found at {file_path}")
+        return
+
+    with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
     
     # 替換註解中的內容
@@ -42,7 +55,7 @@ def update_readme(weather_str):
     
     if re.search(pattern, content, flags=re.DOTALL):
         new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
-        with open("README.md", "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(new_content)
         print("README updated successfully!")
     else:
