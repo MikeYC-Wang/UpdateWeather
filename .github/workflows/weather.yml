@@ -1,0 +1,35 @@
+﻿name: Update Weather
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # UTC 時間每 4 小時執行
+  workflow_dispatch:      # 允許手動點擊觸發
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:          # 重要：賦予 Action 寫入權限
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Install dependencies
+        run: pip install requests
+        
+      - name: Update README
+        env:
+          CWA_API_KEY: ${{ secrets.CWA_API_KEY }}
+        run: python update_weather.py
+        
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "☁️ Update weather info" || exit 0
+          git push
